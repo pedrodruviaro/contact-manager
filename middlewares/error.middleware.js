@@ -1,11 +1,18 @@
 const constants = require("../constants")
 
+// captura qualquer erro passado usando next(err) ou lançado em rotas async
+
 const errorHandler = (err, _, res, __) => {
-  const statusCode = res.status ?? 500
-  const responseObject = { message: err.message }
+  const statusCode = res.statusCode !== 200 ? res.statusCode : 500
+  res.status(statusCode)
+
+  const responseObject = {
+    message: err.message,
+  }
 
   if (process.env.NODE_ENV === "development") {
     responseObject.stackTrace = err.stack ?? ""
+    responseObject.name = err.name
   }
 
   switch (statusCode) {
@@ -25,6 +32,7 @@ const errorHandler = (err, _, res, __) => {
       responseObject.title = "Internal server error"
       break
     default:
+      responseObject.title = "Unexpected error"
       break
   }
 
